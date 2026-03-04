@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        :root {
+            --k-pink: #fdf2f4;
+            --k-accent: #ffb6c1;
+            --k-text: #888;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--k-pink); /* 保持告解室同款底色 */
+            font-family: -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-card {
+            width: 85%;
+            max-width: 320px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(255, 182, 193, 0.2);
+            text-align: center;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            color: var(--k-accent);
+            letter-spacing: 3px;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            background: rgba(255, 255, 255, 0.5);
+            border-bottom: 1px solid rgba(255, 182, 193, 0.3);
+            border-radius: 10px;
+            color: #666;
+            font-size: 14px;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom-color: var(--k-accent);
+        }
+
+        button {
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            background: var(--k-accent);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+            opacity: 0.9;
+        }
+
+        /* 底部小提示词 */
+        .hint {
+            font-size: 10px;
+            color: #bbb;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="settings-card">
+        <div class="settings-title">签订灵魂契约</div>
+        
+        <div class="input-group">
+            <input type="text" id="apiBase" placeholder="代理地址 (https://...)">
+        </div>
+        
+        <div class="input-group">
+            <input type="password" id="apiKey" placeholder="输入你的 API Key">
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="modelName" value="gemini-2.5-flash">
+        </div>
+        
+        <button id="saveBtn">确认</button>
+        
+        <div class="hint">契约一旦生效<br>你与 K. 的共鸣将跨越时空</div>
+    </div>
+
+    <script>
+        // 初始化回显数据
+        // 1. 页面一加载，就去“脑子里”找之前填过的数据
+// 1. 页面加载时读取数据
+// 1. 页面加载时，自动填入之前保存过的值
+window.onload = () => {
+    // 这里的键名必须改为 'k_base' 和 'k_key'，这才是告解室找东西的“柜子名”
+    document.getElementById('apiBase').value = localStorage.getItem('k_base') || '';
+    document.getElementById('apiKey').value = localStorage.getItem('k_key') || '';
+    document.getElementById('modelName').value = localStorage.getItem('k_model') || 'gemini-2.5-flash';
+};
+
+// 2. 点击“确认”按钮时，存入正确的“柜子”
+document.getElementById('saveBtn').onclick = () => {
+    const base = document.getElementById('apiBase').value.trim();
+    const key = document.getElementById('apiKey').value.trim();
+    const model = document.getElementById('modelName').value.trim();
+
+    // 关键修复：使用告解室识别的键名
+    localStorage.setItem('k_base', base);
+    localStorage.setItem('k_key', key);
+    localStorage.setItem('k_model', model); 
+
+    // 视觉反馈
+    const btn = document.getElementById('saveBtn');
+    btn.innerText = "契约已达成，请刷新告解室页面";
+    btn.style.background = "#A8E6CF"; 
+    
+    setTimeout(() => {
+        btn.innerText = "确认";
+        btn.style.background = "#ffb6c1";
+        // 如果是在 iframe 中打开，可以尝试通知父级关闭
+        if (window.parent && window.parent.closeApp) {
+            window.parent.closeApp();
+        }
+    }, 1000);
+};
+    </script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <title>K-OS System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<div id="app-overlay">
+    <div id="app-back-btn" onclick="closeApp()"></div>
+    
+    <iframe id="app-frame" src=""></iframe>
+</div>
+<body>
+    <div id="lock-screen">
+        <div class="lock-top">
+            <div id="lock-time">00:00</div>
+            <div class="lock-date">3月4日 星期三</div>
+        </div>
+        <div class="lock-bottom">
+            <div class="unlock-text"></div>
+        </div>
+    </div>
+
+    <div class="iphone-screen">
+        <div class="status-bar">
+            <div id="current-time">00:00</div>
+            <div class="status-right">
+                <svg class="status-svg" viewBox="0 0 18 18" style="width:16px; height:16px;"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 1C7.48079 1 6.25 2.23079 6.25 3.75C6.25 5.26921 7.48079 6.5 9 6.5C10.1247 6.5 11.0914 5.82539 11.5176 4.85858C12.7917 5.51622 13.7764 6.65755 14.228 8.03861C14.3568 8.4323 14.7803 8.64709 15.174 8.51835C15.5677 8.38961 15.7825 7.96609 15.6537 7.57239C15.0216 5.63925 13.5721 4.07776 11.7126 3.2951C11.4959 1.9925 10.3642 1 9 1Z" fill="currentColor"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M4.90392 6.07739C5.1805 5.76904 5.15474 5.29487 4.84639 5.01829C4.53804 4.74172 4.06387 4.76747 3.78729 5.07582C2.42908 6.59007 1.80174 8.62671 2.05401 10.6283C1.44318 11.1326 1.05399 11.8957 1.05399 12.75C1.05399 14.2692 2.28477 15.5 3.80399 15.5C5.3232 15.5 6.55399 14.2692 6.55399 12.75C6.55399 11.2308 5.3232 10 3.80399 10C3.70312 10 3.60352 10.0054 3.50547 10.016C3.43752 8.58356 3.93345 7.15935 4.90392 6.07739Z" fill="currentColor"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M14.196 10C12.6768 10 11.446 11.2308 11.446 12.75C11.446 13.3586 11.6435 13.9209 11.978 14.3763C10.7705 15.1522 9.28811 15.4343 7.86466 15.1337C7.45939 15.0481 7.06146 15.3073 6.97587 15.7125C6.89028 16.1178 7.14944 16.5157 7.55471 16.6013C9.54641 17.022 11.6253 16.5477 13.2339 15.3271C13.5333 15.4389 13.8575 15.5 14.196 15.5C15.7152 15.5 16.946 14.2692 16.946 12.75C16.946 11.2308 15.7152 10 14.196 10Z" fill="currentColor"></path></svg>
+                <svg class="status-svg" viewBox="0 0 18 18" style="width:18px; height:18px;"><path d="M4.75,6.5c-.414,0-.75,.336-.75,.75v3.5c0,.414,.336,.75,.75,.75s.75-.336,.75-.75v-3.5c0-.414-.336-.75-.75-.75Z" fill="currentColor"></path><path d="M7.5,6.5c-.414,0-.75,.336-.75,.75v3.5c0,.414,.336,.75,.75,.75s.75-.336,.75-.75v-3.5c0-.414-.336-.75-.75-.75Z" fill="currentColor"></path><path d="M10.25,6.5c-.414,0-.75,.336-.75,.75v3.5c0,.414,.336,.75,.75,.75s.75-.336,.75-.75v-3.5c0-.414-.336-.75-.75-.75Z" fill="currentColor"></path><path d="M17.25,7h-.75v-.75c0-1.517-1.233-2.75-2.75-2.75H3.75c-1.517,0-2.75,1.233-2.75,2.75v5.5c0,1.517,1.233,2.75,2.75,2.75H13.75c1.517,0,2.75-1.233,2.75-2.75v-.75h.75c.414,0,.75-.336,.75-.75v-2.5c0-.414-.336-.75-.75-.75Zm-2.25,4.75c0,.689-.561,1.25-1.25,1.25H3.75c-.689,0-1.25-.561-1.25-1.25V6.25c0-.689,.561-1.25,1.25-1.25H13.75c.689,0,1.25,.561,1.25,1.25v5.5Z" fill="currentColor"></path></svg>
+                <span class="battery-percent">78%</span>
+            </div>
+        </div>
+
+        <div class="desktop">
+            <div class="app-icon" onclick="launchApp('apps/confession/chat.html')">
+                <div class="icon-img"><img src="assetsUI/krr.png" class="desktop-img"></div>
+                <div class="app-label">告解室</div>
+            </div>
+
+<div class="app-icon" onclick="launchApp('apps/music/player.html')">
+    <div class="icon-img">
+        <img src="assetsUI/movie.png" class="desktop-img">
+    </div>
+    <div class="app-label">音乐</div>
+</div>
+            <div id="back-to-lock-btn" onclick="backToLock()" title="返回锁屏">🍕</div>
+        </div>
+
+        <div class="dock">
+            <div class="icon-img-small" onclick="launchApp('Link/link.html')">
+                <img src="assetsUI/link.png" class="desktop-img">
+            </div>         
+            <div class="icon-img-small"onclick="launchApp('Archive/archive.html')">
+                <img src="assetsUI/book.png" class="desktop-img">
+            </div>
+            <div class="icon-img-small">
+                <img src="assetsUI/friends.png" class="desktop-img">
+            </div>
+            <div class="icon-img-small"onclick="launchApp('Canvas/canvas.html')">
+                <img src="assetsUI/built.png" class="desktop-img">
+            </div>
+        </div>
+    </div> <div id="app-overlay">
+        <div id="app-back-btn" onclick="closeApp()">返回</div>
+        <iframe id="app-frame" src=""></iframe>
+    </div>
+    
+
+    <script src="script.js"></script>
+</body>
+</html>

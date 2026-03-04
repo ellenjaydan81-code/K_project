@@ -1,0 +1,309 @@
+!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <title>K. - 灵魂告解</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(180deg, #fff1f2 0%, #ffd1dc 100%);
+            --ai-bubble: rgba(255, 255, 255, 0.7); 
+            --user-bubble: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%); 
+            --text-main: #8a6d7a;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            position: fixed;
+            width: 100%; height: 100%;
+            margin: 0; padding: 0;
+            overflow: hidden;
+            background: #fff5f7;
+        }
+
+        .phone { 
+            position: fixed;
+            left: 0; top: 0;
+            width: 100vw;
+            height: 100dvh;
+            background: var(--bg-gradient); 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+
+        .header { 
+            padding: calc(env(safe-area-inset-top) + 10px) 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            flex-shrink: 0;
+            width: 100%;
+            position: relative;
+            z-index: 2000; /* 确保在最顶层，不会被气泡挡住 */
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .name { font-size: 24px; font-weight: 600; letter-spacing: 6px; color: #ff85a2; pointer-events: none; }
+        .status { font-size: 11px; color: #b8a0aa; pointer-events: none; }
+
+        #chatDisplay { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column;
+            -webkit-overflow-scrolling: touch;
+        }
+        #chatDisplay::-webkit-scrollbar { display: none; }
+
+        .bubble { 
+            max-width: 80%; padding: 12px 18px; border-radius: 22px; 
+            font-size: 15px; line-height: 1.5; margin-bottom: 18px; 
+            backdrop-filter: blur(8px); box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            animation: bubblePop 0.4s ease-out; word-wrap: break-word;
+        }
+        .ai { align-self: flex-start; background: var(--ai-bubble); color: var(--text-main); border-bottom-left-radius: 6px; border: 1px solid rgba(255,255,255,0.4); }
+        .user { align-self: flex-end; background: var(--user-bubble); color: #fff; border-bottom-right-radius: 6px; }
+
+        .input-area {
+            padding: 10px 15px calc(10px + env(safe-area-inset-bottom));
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px);
+            display: flex; gap: 10px; flex-shrink: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #userInput { 
+            flex: 1; background: #fff; border: 1px solid #ffd1dc; border-radius: 20px; 
+            padding: 10px 15px; outline: none; font-size: 16px !important; 
+            color: #8a6d7a; resize: none; height: 44px; line-height: 1.4;
+        }
+
+        #sendBtn { 
+            width: 44px; height: 44px; background: #ff85a2; color: #fff; 
+            border: none; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 133, 162, 0.3);
+        }
+
+        .settings { 
+            position: absolute; top: 120px; left: 5%; width: 90%; 
+            background: rgba(255, 254, 255, 0.98); border-radius: 20px; 
+            padding: 20px; z-index: 3000; display: none; border: 2px solid #ffd1dc;
+        }
+        .settings input { width: 100%; margin-bottom: 12px; padding: 10px; border: 1px solid #ffe4e9; border-radius: 8px; }
+        .settings-title { font-weight: bold; margin-bottom: 15px; text-align: center; }
+        #saveBtn { width: 100%; padding: 12px; background: #ff85a2; color: white; border: none; border-radius: 10px; }
+
+        @keyframes bubblePop { from { opacity: 0; transform: translateY(15px) scale(0.8); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone">
+        <div class="header" id="headerTrigger">
+            <div class="name">K.</div>
+            <div class="status">静谧的告解室 · 灵魂共鸣中</div>
+        </div>
+
+        <div id="chatDisplay">
+            <div class="bubble ai">“在这里，你所有的秘密都是安全的。想聊聊吗？”</div>
+        </div>
+
+        <div class="input-area">
+            <textarea id="userInput" placeholder="输入告解..." rows="1" autocorrect="off" autocomplete="off" spellcheck="false"></textarea>
+            <button id="sendBtn">➤</button>
+        </div>
+    </div>
+
+
+       <script>
+        // 你的特质 Prompt 已移至世界书读取，此处仅作兜底
+        const chatDisplay = document.getElementById('chatDisplay');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const headerTrigger = document.getElementById('headerTrigger');
+
+        const sounds = {
+            pop: new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'),
+            send: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3')
+        };
+
+        let messageHistory = [];
+        let isTyping = false;
+        let replyTimer = null;
+
+        // --- 核心布局修复 ---
+        function adjustLayout() {
+            window.scrollTo(0, 0);
+            if (window.visualViewport) {
+                document.querySelector('.phone').style.height = `${window.visualViewport.height}px`;
+            }
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        }
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', adjustLayout);
+        }
+
+        // --- 初始化历史记录 ---
+        window.onload = () => {
+            const saved = localStorage.getItem('k_history');
+            if (saved) {
+                try {
+                    messageHistory = JSON.parse(saved);
+                    chatDisplay.innerHTML = ''; 
+                    messageHistory.forEach(msg => {
+                        if (msg.parts && msg.parts[0]?.text) {
+                            addBubble(msg.role === 'user' ? 'user' : 'ai', msg.parts[0].text);
+                        }
+                    });
+                } catch (e) { console.error("历史记录解析失败:", e); }
+            }
+            adjustLayout();
+        };
+
+        // --- 发送逻辑 ---
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text || isTyping) return;
+
+            const base = localStorage.getItem('k_base');
+            const key = localStorage.getItem('k_key');
+            const model = localStorage.getItem('k_model') || "gemini-1.5-flash"; 
+
+            if (!key || !base) {
+                addBubble('ai', "（契约尚未生效。请点击上方‘K.’进入设定。）");
+                return;
+            }
+
+            sounds.send.play().catch(()=>{});
+            addBubble('user', text);
+            userInput.value = '';
+            userInput.style.height = '44px';
+            
+            messageHistory.push({ role: "user", parts: [{ text: text }] });
+            localStorage.setItem('k_history', JSON.stringify(messageHistory));
+
+            if (replyTimer) clearTimeout(replyTimer);
+            replyTimer = setTimeout(() => fetchAI(base, key, model, text), 1000);
+        }
+
+        // --- AI 请求核心函数 ---
+        async function fetchAI(base, key, model, userInputText) {
+            isTyping = true;
+            try {
+                // 1. 读取世界书
+                const i = localStorage.getItem('k_world_identity') || "";
+                const b = localStorage.getItem('k_world_background') || "";
+                const s = localStorage.getItem('k_world_speech') || "";
+                const m = localStorage.getItem('k_world_memory') || "";
+
+                const dynamicPrompt = `【人设】:${i}\n【背景】:${b}\n【风格】:${s}\n【记忆】:${m}\n请严格遵守人设，自然对话。`;
+
+                const url = base.includes('/v1') ? 
+                    `${base.replace(/\/$/, '')}/models/${model}:generateContent?key=${key}` : 
+                    `${base.replace(/\/$/, '')}/v1beta/models/${model}:generateContent?key=${key}`;
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: dynamicPrompt }] }, 
+                        contents: messageHistory,
+                        generationConfig: { temperature: 0.85, maxOutputTokens: 2048 }
+                    })
+                });
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error.message);
+
+                const fullText = data.candidates[0].content.parts[0].text;
+
+                // 2. 存入历史
+                messageHistory.push({ role: "model", parts: [{ text: fullText }] });
+                localStorage.setItem('k_history', JSON.stringify(messageHistory));
+
+                // 3. 打字机输出
+                const fragments = fullText.split(/\n+|(?<=[。！？])\s+/).filter(s => s.trim());
+                for (const f of fragments) {
+                    const bubble = addBubble('ai', '');
+                    await typeWriter(f, bubble);
+                    await new Promise(r => setTimeout(r, 800));
+                }
+
+                // 4. 静默提取记忆 (调用外部定义的函数)
+                extractMemorySilently(base, key, model, userInputText, fullText);
+
+            } catch (e) {
+                console.error(e);
+                addBubble('ai', "……（信号由于念压变得不稳定）");
+            } finally { 
+                isTyping = false; 
+            }
+        }
+
+        // --- 辅助函数：独立出来，防止嵌套报错 ---
+        async function extractMemorySilently(base, key, model, uText, aText) {
+            try {
+                const url = base.includes('/v1') ? `${base.replace(/\/$/, '')}/models/${model}:generateContent?key=${key}` : `${base.replace(/\/$/, '')}/v1beta/models/${model}:generateContent?key=${key}`;
+                const instr = `你是一个记忆提取专家。提取关于用户的长期事实。用户:"${uText}"，AI:"${aText}"。仅输出事实，无则回“无”。`;
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: instr }] }] })
+                });
+                const data = await res.json();
+                const result = data.candidates[0].content.parts[0].text.trim();
+
+                if (result !== "无" && result.length > 2) {
+                    let oldM = localStorage.getItem('k_world_memory') || "";
+                    localStorage.setItem('k_world_memory', oldM + "\n" + result);
+                    console.log("🧠 记忆已存入:", result);
+                }
+            } catch (err) { console.warn("记忆存储跳过"); }
+        }
+
+        function typeWriter(text, element) {
+            return new Promise((resolve) => {
+                let i = 0;
+                function type() {
+                    if (i < text.length) {
+                        element.innerText += text.charAt(i++);
+                        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                        if (Math.random() > 0.8) sounds.pop.play().catch(()=>{});
+                        setTimeout(type, 60);
+                    } else { resolve(); }
+                }
+                type();
+            });
+        }
+
+        function addBubble(role, content) {
+            const div = document.createElement('div');
+            div.className = `bubble ${role}`;
+            div.innerText = content;
+            chatDisplay.appendChild(div);
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            return div;
+        }
+
+        // --- 事件绑定 ---
+        sendBtn.onclick = handleSend;
+        userInput.onkeydown = (e) => { 
+            if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } 
+        };
+
+        headerTrigger.onclick = () => { window.location.href = 'link.html'; };
+
+        userInput.addEventListener('input', function() {
+            this.style.height = '44px';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+    </script>
+</body>
+</html>

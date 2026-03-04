@@ -1,0 +1,336 @@
+:root {
+    --ios-blur: blur(25px);
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+    
+    /* 核心风格配色 */
+    --k-pink: #ffd1dc; /* 你原本聊天的粉色 */
+    --k-theme-dark: #b19cd9; /* 你原本桌面的粉色渐变 */
+    --k-text: #666; /* 聊天文字颜色 */
+    --k-bubble-user: #e3f2fd; /* 用户气泡 */
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body, html {
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    overflow: hidden; background: #000;
+    font-family: -apple-system, "PingFang SC", sans-serif;
+}
+
+/* 全覆盖锁屏：不透明，贴合主题色 */
+#lock-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #fdf2f4; /* 告解室同款底色 */
+    z-index: 99999; /* 确保在最最最顶层 */
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    padding: 100px 0 60px;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#lock-screen.unlocked { transform: translateY(-100%); }
+
+#lock-time { font-size: 80px; font-weight: 200; color: #ffb6c1; }
+.lock-date { font-size: 18px; color: #888; margin-top: -10px; }
+.unlock-text { color: #ffb6c1; letter-spacing: 2px; animation: blink 2s infinite; }
+
+/* 桌面上的隐藏小锁屏键 */
+.lock-mini-btn {
+    position: absolute; top: 60px; right: 20px;
+    width: 25px; height: 25px; background: rgba(255,255,255,0.4);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 12px; opacity: 0.6;
+}
+
+/* 核心：左上角返回按钮 */
+/* ============================
+   /* ============================
+   1. 极简悬浮返回键 (只在左上角)
+   ============================ */
+#app-back-btn {
+    position: absolute;
+    /* 避开顶部的状态栏（25px） */
+    top: 55px; 
+    left: 20px;
+    z-index: 10001; /* 确保在 iframe 之上 */
+    
+    /* 变成一个精致的小圆球 */
+    width: 35px;
+    height: 35px;
+    background: rgba(255, 255, 255, 0.6); 
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+/* ============================
+   精准对齐的悬浮返回键
+   ============================ */
+#app-back-btn {
+    position: fixed;
+    top: calc(15px + var(--safe-top)); 
+    left: 20px;
+    z-index: 100000;
+    
+    width: 34px;  /* 稍微缩小一点，更精致 */
+    height: 34px;
+    
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 50%;
+    
+    /* 核心对齐逻辑 */
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* 核心：取消之前可能存在的 padding 干扰 */
+    padding: 0 !important;
+}
+
+/* 核心：视觉对齐的小箭头 */
+#app-back-btn::after {
+    content: '';
+    width: 9px;  /* 奇数像素有时比偶数更容易在视觉上对齐中心 */
+    height: 9px;
+    
+    /* 增加线宽到 2.5px，增强质感 */
+    border-left: 2.5px solid #ffb6c1; 
+    border-bottom: 2.5px solid #ffb6c1;
+    
+    /* 旋转 */
+    transform: rotate(45deg); 
+    
+    /* 【灵魂手术】视觉补偿：
+       因为箭头开口向右，视觉重心在左，所以我们要手动向右挪动 1.5 到 2 像素 */
+    margin-left: 2.5px; 
+    margin-top: 0.5px; /* 如果觉得上下也不对，可以微调这里 */
+}
+
+/* 增加触摸时的丝滑反馈 */
+#app-back-btn:active {
+    transform: scale(0.88);
+    background: rgba(255, 255, 255, 1);
+}
+/* ============================
+   2. 彻底去掉下方的灰色条
+   ============================ */
+.home-bar {
+    display: none !important; /* 强制消失，不留痕迹 */
+}
+
+/* 修正 iframe 内部边距，防止内容被返回键挡住 */
+#app-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding-top: 10px; /* 让告解室顶部的 K. 标题稍微留白 */
+}
+/* ============================
+   2. 点击时的动态反馈 (问题核心：不丝滑的解决)
+   ============================ */
+/* 当用户按住按钮时，触发一个轻微的缩放和加深效果 */
+#global-back-btn:active {
+    transform: scale(0.92); /* 轻微縮放，模仿点击深度 */
+    background: rgba(255, 255, 255, 1); /* 加深底色 */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05); /* 阴影也变淡，增加真实感 */
+    transition: transform 0.1s ease-out; /* 点击时的反馈要快 */
+}
+
+/* 如果你想让图标更高级，可以加一个特定的小箭头 */
+#global-back-btn::before {
+    content: ''; /* 使用 CSS 绘制箭头，不使用丑陋的纯文本符号 */
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-left: 2.5px solid currentColor; /* 使用currentColor自动继承文字颜色 */
+    border-bottom: 2.5px solid currentColor;
+    transform: rotate(45deg); /* 旋转出箭头的样子 */
+    margin-right: -2px; /* 调整位置 */
+}
+/* App 容器层级 */
+#app-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 10000; 
+    transform: translateY(100%);
+    transition: transform 0.4s ease;
+}
+#app-overlay.open { transform: translateY(0); }
+
+/* ============================
+   2. 主桌面
+   ============================ */
+.iphone-screen {
+    position: relative;
+    width: 100%; height: 100%;
+    /* 保持你原本的甜酷风格渐变背景 */
+    background: linear-gradient(160deg, var(--k-pink) 0%, var(--k-theme-dark) 100%); 
+    background-size: cover;
+    display: flex; flex-direction: column;
+    z-index: 100; /* 锁屏以下 */
+}
+
+/* 系统状态栏 */
+.status-bar {
+    height: 44px;
+    padding: var(--safe-top) 25px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    color: white; font-size: 15px; font-weight: 600;
+}
+
+/* 桌面图标区 */
+.desktop {
+    flex: 1;
+    padding: 30px 25px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 100px;
+    gap: 20px;
+}
+
+.app-icon { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+.app-icon:active { transform: scale(0.92); transition: 0.1s; }
+
+.icon-img {
+    width: 62px;
+    height: 62px;
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-radius: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* 加深图标底部阴影，利用负值 spread 让阴影更聚焦 */
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5); 
+    padding: 12px; /* 增加留白，让图片看起来更精致 */
+    box-sizing: border-box;
+    overflow: hidden;
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px); /* 兼容 Safari 浏览器 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4)
+}
+
+/* 内部图片样式保持不变 */
+.desktop-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 保证图标比例完美不拉伸 */
+}
+
+
+/* 藏起来的返回锁屏按钮 (问题2解决) */
+#back-to-lock-btn {
+    position: absolute;
+    top: 60px; /* 状态栏下方 */
+    right: 20px;
+    width: 20px; height: 20px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    color: white; font-size: 10px;
+    opacity: 0.5; /* 半透明隐藏 */
+    cursor: pointer;
+    transition: 0.2s;
+}
+#back-to-lock-btn:hover { opacity: 1; }
+
+/* 底部 Dock */
+.dock {
+    margin: 0 20px calc(15px + var(--safe-bottom));
+    height: 85px;
+    background: rgba(255, 255, 255, 0.1); /* 半透明白 */
+    /* 核心：毛玻璃边缘模糊效果 */
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px);
+    /* 加深底栏阴影 */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+}
+/* Dock 里的图标也要带底座感 */
+.icon-img-small {
+    width: 55px;
+    height: 55px;
+    background: rgba(20, 20, 20, 0.1) !important;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px; /* 留出呼吸感 */
+    box-sizing: border-box;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+/* ============================
+   3. App 运行容器
+   ============================ */
+#app-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; /* iframe 加载时的黑色过渡 */
+    z-index: 1000; /* 比桌面高，比锁屏低 */
+    transform: translateY(100%); /* 默认在屏幕下方隐藏 */
+    transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+    
+    /* 核心：隐藏时禁止点击，防止挡住桌面图标 */
+    pointer-events: none; 
+}
+
+#app-overlay.open { 
+    transform: translateY(0); 
+    /* 核心：打开时恢复点击 */
+    pointer-events: auto; 
+}
+
+/* 应用内的 iframe */
+#app-frame {
+    width: 100%; height: 100%;
+    border: none;
+    /* 给顶部留出状态栏和返回按钮的位置，防止告解室的内容贴顶 */
+    padding-top: calc(44px + var(--safe-top)); 
+    box-sizing: border-box;
+    /* 核心：告解室本身的背景色 */
+    background: #fdf2f4; /* 贴合 image_5.png 的背景色 */
+}
+
+/* 问题1解决：应用内左上角手机软件返回按钮 */
+#app-back-btn {
+    position: absolute;
+    top: calc(10px + var(--safe-top));
+    left: 15px;
+    
+    /* 手机 App 的样式 */
+    display: flex; align-items: center; gap: 5px;
+    padding: 8px 15px 8px 10px;
+    
+    /* 贴合 image_5.png 的配色风格 */
+    background: white; 
+    border-radius: 20px;
+    color: #ffb6c1; /* 贴合主题的粉色文字 */
+    font-size: 14px;
+    font-weight: 600;
+    
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 1001; /* 压在 iframe 之上 */
+
+    
+}
+#app-back-btn:active { background: #fdfdfd; transform: translateY(1px); }
+

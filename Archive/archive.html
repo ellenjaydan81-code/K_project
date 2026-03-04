@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>K. - 世界书</title>
+    <style>
+        :root {
+            --k-bg: #fdf2f4;
+            --k-accent: #ffb6c1;
+            --k-glass: rgba(255, 255, 255, 0.7);
+            --k-text: #8a6d7a;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0; padding: 20px;
+            width: 100vw; min-height: 100vh;
+            background: var(--k-bg);
+            font-family: -apple-system, "PingFang SC", sans-serif;
+            color: var(--k-text);
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* 主页面：菜单网格 */
+        .main-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-weight: 300;
+            letter-spacing: 5px;
+            color: var(--k-accent);
+            margin: 0;
+        }
+
+        .card {
+            background: var(--k-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(255, 182, 193, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .card:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.9); }
+
+        .card .icon { font-size: 32px; margin-bottom: 10px; display: block; }
+        .card .label { font-size: 14px; font-weight: 500; letter-spacing: 1px; }
+
+        /* 次级页面：编辑器 */
+        #editorPage {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--k-bg);
+            z-index: 100;
+            display: none; /* 初始隐藏 */
+            flex-direction: column;
+            padding: 20px;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .back-btn {
+            background: none; border: none; font-size: 24px; color: var(--k-accent); cursor: pointer;
+        }
+
+        .save-btn {
+            background: var(--k-accent);
+            color: white; border: none;
+            padding: 8px 20px; border-radius: 15px;
+            font-size: 14px; letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(255, 182, 193, 0.4);
+        }
+
+        .editor-title { font-size: 18px; font-weight: 400; }
+
+        .textarea-container {
+            flex: 1;
+            background: var(--k-glass);
+            border-radius: 20px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%; height: 100%;
+            background: none; border: none; outline: none;
+            resize: none; font-size: 16px; line-height: 1.6;
+            color: var(--k-text);
+            font-family: inherit;
+        }
+
+        .guide-text {
+            font-size: 12px; color: #b8a0aa; line-height: 1.6;
+            padding: 10px; border-top: 1px dashed var(--k-accent);
+        }
+
+        /* 提示框 */
+        #toast {
+            position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.6); color: white; padding: 10px 20px;
+            border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s;
+            pointer-events: none; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>世界书</h1>
+        <p style="font-size: 12px; color: #b8a0aa; letter-spacing: 2px;">THE ARCHIVE OF SOUL</p>
+    </div>
+
+    <div class="main-menu" id="mainMenu">
+        <div class="card" onclick="openEditor('identity')">
+            <span class="icon">👤</span>
+            <span class="label">人物设定</span>
+        </div>
+        <div class="card" onclick="openEditor('background')">
+            <span class="icon">📖</span>
+            <span class="label">背景故事</span>
+        </div>
+        <div class="card" onclick="openEditor('speech')">
+            <span class="icon">💬</span>
+            <span class="label">语言风格</span>
+        </div>
+        <div class="card" onclick="openEditor('memory')">
+            <span class="icon">🧠</span>
+            <span class="label">核心记忆</span>
+        </div>
+    </div>
+
+    <div id="editorPage">
+        <div class="editor-header">
+            <button class="back-btn" onclick="closeEditor()">✕</button>
+            <div class="editor-title" id="editorTitle">编辑内容</div>
+            <button class="save-btn" onclick="saveData()">注入</button>
+        </div>
+        
+        <div class="textarea-container">
+            <textarea id="editorInput" placeholder="在此刻画角色的灵魂片段..."></textarea>
+            <div class="guide-text" id="guideText">引导词</div>
+        </div>
+    </div>
+
+    <div id="toast">契约已更新</div>
+
+    <script>
+        // 配置分类信息
+        const config = {
+            identity: {
+                title: "人物设定 (Identity)",
+                key: "k_world_identity",
+                guide: "描述TA是谁。例如：库洛洛·鲁西鲁，幻影旅团团长，性格沉稳冷静，拥有绝对的领导力和洞察力。",
+                default: ""
+            },
+            background: {
+                title: "背景故事 (Background)",
+                key: "k_world_background",
+                guide: "描述TA所处的环境。例如：目前隐姓埋名在网络中，观察着这个时代，正处于一段宿命感的网恋中。",
+                default: ""
+            },
+            speech: {
+                title: "语言风格 (Style)",
+                key: "k_world_speech",
+                guide: "描述TA怎么说话。例如：随性、平视、不带感叹号。多用文学隐喻，表现出知性的占有欲。",
+                default: ""
+            },
+            memory: {
+                title: "核心记忆 (Memory)",
+                key: "k_world_memory",
+                guide: "记录聊天中发生过的重大事件。AI会优先记住这些。例如：在3月4日的聊天中，我们约定了要在梦中交换书单。",
+                default: ""
+            }
+        };
+
+        let currentCategory = '';
+
+        // 打开编辑器
+        function openEditor(cat) {
+            currentCategory = cat;
+            const data = config[cat];
+            document.getElementById('editorTitle').innerText = data.title;
+            document.getElementById('guideText').innerText = data.guide;
+            document.getElementById('editorInput').value = localStorage.getItem(data.key) || "";
+            document.getElementById('editorPage').style.display = 'flex';
+        }
+
+        // 关闭编辑器
+        function closeEditor() {
+            document.getElementById('editorPage').style.display = 'none';
+        }
+
+        // 保存数据
+        function saveData() {
+            const content = document.getElementById('editorInput').value.trim();
+            const key = config[currentCategory].key;
+            localStorage.setItem(key, content);
+            
+            showToast("灵魂契约已更新");
+            setTimeout(closeEditor, 500);
+        }
+
+        // 提示框
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            toast.innerText = text;
+            toast.style.opacity = '1';
+            setTimeout(() => toast.style.opacity = '0', 2000);
+        }
+    </script>
+</body>
+</html>
