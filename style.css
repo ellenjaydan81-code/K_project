@@ -13,12 +13,11 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body, html {
+    width: 100vw !important; /* 强制视口宽度 */
+    height: 100vh;
     margin: 0; padding: 0;
-    width: 100%; height: 100%;
-    overflow: hidden; background: #000;
-    font-family: -apple-system, "PingFang SC", sans-serif;
+    overflow: hidden; 
 }
-
 /* 全覆盖锁屏：不透明，贴合主题色 */
 #lock-screen {
     position: fixed;
@@ -134,10 +133,14 @@ body, html {
 
 /* 修正 iframe 内部边距，防止内容被返回键挡住 */
 #app-frame {
-    width: 100%;
+    width: 100%; 
     height: 100%;
     border: none;
-    padding-top: 10px; /* 让告解室顶部的 K. 标题稍微留白 */
+    /* 【核心修改】：减小此处的 padding。
+       原本是 44px + safe-top，现在改为只保留极小值，因为 chat.html 内部会处理刘海 */
+    padding-top: 5px !important; 
+    box-sizing: border-box;
+    background: #fdf2f4;
 }
 /* ============================
    2. 点击时的动态反馈 (问题核心：不丝滑的解决)
@@ -311,10 +314,9 @@ body, html {
 
 /* 问题1解决：应用内左上角手机软件返回按钮 */
 #app-back-btn {
-    position: absolute;
-    top: calc(10px + var(--safe-top));
+    position: fixed; /* 改为 fixed 确保在 iframe 之上不动 */
+    top: calc(8px + var(--safe-top)); /* 随刘海动态浮动 */
     left: 15px;
-    
     /* 手机 App 的样式 */
     display: flex; align-items: center; gap: 5px;
     padding: 8px 15px 8px 10px;
@@ -328,8 +330,7 @@ body, html {
     
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    z-index: 1001; /* 压在 iframe 之上 */
-
+z-index: 100001 !important; /* 必须高于所有容器 */
     
 }
 #app-back-btn:active { background: #fdfdfd; transform: translateY(1px); }
