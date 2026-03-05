@@ -22,41 +22,66 @@
             background: #fff5f7;
         }
 
-        .phone { 
-            position: fixed;
-            left: 0; top: 0;
-            width: 100vw;
-            height: 100dvh;
-            background: var(--bg-gradient); 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-        }
+/* 1. 核心容器修复：彻底消灭右侧和底部白边 */
+.phone {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw !important; /* 强制视口宽度 */
+    height: 100dvh; /* 动态适配高度 */
+    background: var(--bg-gradient);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 0; padding: 0;
+}
 
-        .header { 
-            padding: calc(env(safe-area-inset-top) + 10px) 20px 15px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-            flex-shrink: 0;
-            width: 100%;
-            position: relative;
-            z-index: 2000; /* 确保在最顶层，不会被气泡挡住 */
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
+/* 2. 🛡️ 顶部适配：缩窄且完美避开刘海 */
+.header {
+    /* 关键计算：自动探测安全区域（刘海）高度，再加上极小的 5px 缓冲 */
+    /* 这样它永远在灵动岛下方，但不会像之前那样悬空太远 */
+    padding-top: calc(env(safe-area-inset-top) + 5px) !important;
+    padding-bottom: 10px !important; /* 底部也缩窄，更紧凑 */
+    
+    /* 强制居中与全屏逻辑 */
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 2000;
+}
 
+/* 确保内部文字精准居中且紧凑 */
+.header h1, .header .name, .header .status {
+    margin: 0 auto !important;
+    text-align: center !important;
+    width: fit-content;
+}
+
+/* 调整那个返回的小箭头，确保它在同一水平线上 */
+.back-btn {
+    position: absolute;
+    left: 15px;
+    top: calc(env(safe-area-inset-top) + 8px); /* 随刘海动态调整 */
+    z-index: 2001;
+}
         .name { font-size: 24px; font-weight: 600; letter-spacing: 6px; color: #ff85a2; pointer-events: none; }
         .status { font-size: 11px; color: #b8a0aa; pointer-events: none; }
 
-        #chatDisplay { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column;
-            -webkit-overflow-scrolling: touch;
-        }
+     #chatDisplay {
+    flex: 1;
+    width: 100%;
+    padding: 15px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* iOS 滑动优化 */
+    display: flex;
+    flex-direction: column;
+}
         #chatDisplay::-webkit-scrollbar { display: none; }
 
         .bubble { 
@@ -67,20 +92,47 @@
         }
         .ai { align-self: flex-start; background: var(--ai-bubble); color: var(--text-main); border-bottom-left-radius: 6px; border: 1px solid rgba(255,255,255,0.4); }
         .user { align-self: flex-end; background: var(--user-bubble); color: #fff; border-bottom-right-radius: 6px; }
+.message {
+    max-width: 85%; /* 气泡最宽占屏幕 85% */
+    margin-bottom: 12px;
+    word-wrap: break-word;
+}
 
+.ai-message {
+    align-self: flex-start; /* AI 靠左 */
+}
+
+.user-message {
+    align-self: flex-end; /* 用户靠右 */
+}
         .input-area {
-            padding: 10px 15px calc(10px + env(safe-area-inset-bottom));
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(15px);
-            display: flex; gap: 10px; flex-shrink: 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-        }
+    padding: 10px 15px calc(env(safe-area-inset-bottom) + 10px);
+    background: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
 
-        #userInput { 
-            flex: 1; background: #fff; border: 1px solid #ffd1dc; border-radius: 20px; 
-            padding: 10px 15px; outline: none; font-size: 16px !important; 
-            color: #8a6d7a; resize: none; height: 44px; line-height: 1.4;
-        }
+#userInput {
+    flex: 1;
+/* ...其他属性... */
+    appearance: none;          /* 标准属性 */
+    -webkit-appearance: none;  /* 针对 iOS/Safari 的补丁 */
+    -moz-appearance: none;     /* 针对 Firefox 的补丁 */
+    /* 修复文字偏移：确保 line-height 和 padding 平衡 */
+    height: 40px;
+    line-height: 20px; 
+    padding: 10px 15px !important; 
+    font-size: 16px; /* 16px 以上可防止 iOS 自动放大页面 */
+    border-radius: 20px;
+    border: 1px solid rgba(0,0,0,0.1);
+    outline: none;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center; /* 垂直居中文字 */
+}
 
         #sendBtn { 
             width: 44px; height: 44px; background: #ff85a2; color: #fff; 
@@ -104,7 +156,7 @@
 <body>
 
     <div class="phone">
-        <div class="header" id="headerTrigger">
+       <div class="header">
             <div class="name">K.</div>
             <div class="status">静谧的告解室 · 灵魂共鸣中</div>
         </div>
@@ -125,7 +177,6 @@
         const chatDisplay = document.getElementById('chatDisplay');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
-        const headerTrigger = document.getElementById('headerTrigger');
 
         const sounds = {
             pop: new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'),
@@ -173,7 +224,7 @@
 
             const base = localStorage.getItem('k_base');
             const key = localStorage.getItem('k_key');
-            const model = localStorage.getItem('k_model') || "gemini-1.5-flash"; 
+            const model = localStorage.getItem('k_model') || "gemini-2.5-flash"; 
 
             if (!key || !base) {
                 addBubble('ai', "（契约尚未生效。请点击上方‘K.’进入设定。）");
@@ -298,7 +349,6 @@
             if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } 
         };
 
-        headerTrigger.onclick = () => { window.location.href = 'link.html'; };
 
         userInput.addEventListener('input', function() {
             this.style.height = '44px';
