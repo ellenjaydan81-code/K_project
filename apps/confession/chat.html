@@ -15,18 +15,20 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         html, body {
-            position: fixed;
-            width: 100%; height: 100%;
-            margin: 0; padding: 0;
-            overflow: hidden;
-            background: #fff5f7;
-        }
+       position: fixed;
+    width: 100vw; /* 改为 100vw，确保占满手机视口 */
+    height: 100dvh; /* 改为 100dvh */
+    margin: 0; padding: 0;
+    overflow: hidden;
+    background: #fff5f7;
+}
 
 /* 1. 核心容器修复：彻底消灭右侧和底部白边 */
 .phone {
     position: fixed;
     top: 0; left: 0;
     width: 100vw !important; /* 强制视口宽度 */
+    left: 0;
     height: 100dvh; /* 动态适配高度 */
     background: var(--bg-gradient);
     display: flex;
@@ -39,8 +41,8 @@
 .header {
     /* 关键计算：自动探测安全区域（刘海）高度，再加上极小的 5px 缓冲 */
     /* 这样它永远在灵动岛下方，但不会像之前那样悬空太远 */
-    padding-top: calc(env(safe-area-inset-top) + 5px) !important;
-    padding-bottom: 10px !important; /* 底部也缩窄，更紧凑 */
+    padding-top: calc(env(safe-area-inset-top) + 10px) !important;
+    padding-bottom: 8px !important; /* 底部也缩窄，更紧凑 */
     
     /* 强制居中与全屏逻辑 */
     width: 100% !important;
@@ -113,6 +115,7 @@
     gap: 8px;
     width: 100%;
     box-sizing: border-box;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
 }
 
 #userInput {
