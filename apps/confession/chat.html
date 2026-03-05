@@ -24,38 +24,39 @@
 }
 
 /* 1. 核心容器修复：彻底消灭右侧和底部白边 */
-.phone {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw !important; /* 强制视口宽度 */
-    left: 0;
-    height: 100dvh; /* 动态适配高度 */
-    background: var(--bg-gradient);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    margin: 0; padding: 0;
-}
-
-/* 2. 🛡️ 顶部适配：缩窄且完美避开刘海 */
+/* 1. 顶部 Header 修复：适配 black-translucent 模式 */
 .header {
-    /* 关键计算：自动探测安全区域（刘海）高度，再加上极小的 5px 缓冲 */
-    /* 这样它永远在灵动岛下方，但不会像之前那样悬空太远 */
-    padding-top: calc(env(safe-area-inset-top) + 10px) !important;
-    padding-bottom: 8px !important; /* 底部也缩窄，更紧凑 */
+    /* 因为脚本强行让内容置顶，我们要用 padding 把它从刘海挤出来 */
+    /* env(safe-area-inset-top) 在你这个模式下通常是 44px 到 50px */
+    padding-top: env(safe-area-inset-top) !important; 
     
-    /* 强制居中与全屏逻辑 */
-    width: 100% !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    /* 这里控制你想要的“窄一点”，如果觉得还是宽，就把 5px 改成 0 */
+    padding-bottom: 5px !important; 
+    
+    width: 100vw !important; /* 解决右侧留空 */
     display: flex;
     flex-direction: column;
     align-items: center; 
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.15); /* 稍微加深一点点，防止透出来的状态栏太乱 */
+    backdrop-filter: blur(15px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    z-index: 2000;
+    z-index: 9999;
+}
+
+/* 2. 容器高度修复：防止底部出现黑边 */
+.phone {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    /* 使用 100vh 配合脚本的 manifest 设置，确保撑满整个屏幕 */
+    height: 100vh !important; 
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-gradient);
+    margin: 0;
+    padding: 0;
 }
 
 /* 确保内部文字精准居中且紧凑 */
@@ -109,32 +110,25 @@
 }
         .input-area {
     padding: 10px 15px calc(env(safe-area-inset-bottom) + 10px);
-    background: white;
-    display: flex;
+background: #ffffff; /* 必须有实色背景 */    display: flex;
     align-items: center;
     gap: 8px;
     width: 100%;
     box-sizing: border-box;
-    padding-bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 8px) !important;
 }
 
 #userInput {
     flex: 1;
-/* ...其他属性... */
-    appearance: none;          /* 标准属性 */
-    -webkit-appearance: none;  /* 针对 iOS/Safari 的补丁 */
-    -moz-appearance: none;     /* 针对 Firefox 的补丁 */
-    /* 修复文字偏移：确保 line-height 和 padding 平衡 */
-    height: 40px;
-    line-height: 20px; 
-    padding: 10px 15px !important; 
-    font-size: 16px; /* 16px 以上可防止 iOS 自动放大页面 */
-    border-radius: 20px;
-    border: 1px solid rgba(0,0,0,0.1);
-    outline: none;
+    height: 42px; /* 固定高度 */
+    line-height: 22px; /* 行高略大于字体 */
+    padding: 10px 15px !important;
+    font-size: 16px;
+    border-radius: 21px;
     box-sizing: border-box;
+    /* 强力居中补丁 */
     display: flex;
-    align-items: center; /* 垂直居中文字 */
+    align-items: center; 
 }
 
         #sendBtn { 
